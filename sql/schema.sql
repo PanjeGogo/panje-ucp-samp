@@ -1,0 +1,37 @@
+CREATE DATABASE IF NOT EXISTS samp_ucp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE samp_ucp;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  username VARCHAR(24) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  email VARCHAR(254) NOT NULL,
+  discord_id VARCHAR(32) NULL,
+  registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login DATETIME NULL,
+  is_logged_in TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id), UNIQUE KEY uq_users_username (username), UNIQUE KEY uq_users_email (email), UNIQUE KEY uq_users_discord (discord_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS characters (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  char_name VARCHAR(32) NOT NULL,
+  level INT UNSIGNED NOT NULL DEFAULT 1,
+  score INT NOT NULL DEFAULT 0,
+  money BIGINT NOT NULL DEFAULT 0,
+  skin INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id), KEY idx_char_user (user_id), KEY idx_char_rank (level, score, money),
+  CONSTRAINT fk_char_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  session_token CHAR(64) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  PRIMARY KEY (id), UNIQUE KEY uq_session_token (session_token), KEY idx_session_user (user_id),
+  CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
